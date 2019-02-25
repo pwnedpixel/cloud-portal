@@ -54,7 +54,7 @@ login
     });
 
 // This will serve the webpage
-app.use(express.static("./public"));
+app.use(express.static("./src"));
 app.use("/api", router);
 app.use("/login", login);
 app.listen(port, () => console.log("Listening on port " + port));
