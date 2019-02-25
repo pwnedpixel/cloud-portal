@@ -4,4 +4,4 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['build']
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['app', 'deploy','--env.DB_HOST${_DB_HOST}','--env.DB_USER${_DB_USER}','--env.DB_PASS${_DB_PASS}','--env.DB{_DB}']
+  args: ['app', 'deploy','--env.DB_HOST=${_DB_HOST}','--env.DB_USER=${_DB_USER}','--env.DB_PASS=${_DB_PASS}','--env.DB={_DB}']
