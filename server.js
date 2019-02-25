@@ -5,6 +5,10 @@ var bodyParser = require("body-parser");
 const format = require("util").format;
 var uuid = require("uuid");
 
+if (process.env.ENVIRO != "PROD") {
+    require('dotenv').config()
+}
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
