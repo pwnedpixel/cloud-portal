@@ -83,5 +83,6 @@ vm
 // This will serve the webpage
 app.use(express.static("./src"));
 app.use("/api", router);
-app.use("/login", login);
+app.use("/user", user);
+app.use("/vm", vm);
 app.listen(port, () => console.log("Listening on port " + port));
