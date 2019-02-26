@@ -47,9 +47,9 @@ login
         connection.query("SELECT * FROM USERS WHERE USER_ID = '" + req.body.user + "' AND USER_PASSWORD = '" + req.body.password + "'", function (err, rows, fields) {
             if (err) throw err
             if (rows.length > 0) {
-                return res.send("True");
+                return res.json({success: true});
             }
-            return res.send("False");
+            return res.json({success: false});
           })
     });
 
