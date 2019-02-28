@@ -36,11 +36,6 @@ app.use(function(req, res, next) {
 router
     .get("/", (req, res) => {
         res.send("success");
-    })
-
-	// Sample post
-    .post("/test", (req, res) => {
-        res.send(req.body.paramname);
     });
 
 user
