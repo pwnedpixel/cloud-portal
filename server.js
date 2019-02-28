@@ -54,7 +54,49 @@ user
           })
     })
     .post("/charges", (req, res) => {
-        return res.json({success: false});
+        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = '" + req.body.user + "'", (err, rows, fields) => {
+            if (err) throw err;
+            var totalCharges = 0;
+            if (rows.length > 0) {
+                try {
+                    var prevEventType = rows[0].EVENT_TYPE;
+                    var vmType = rows[0].VM_TYPE;
+                    var prevTime = new Date(rows[0].EVENT_TIME).getTime();
+                    for (var i = 1; i < rows.length; i++) {
+                        var currTime = new Date(rows[i].EVENT_TIME).getTime();
+                        var currType = rows[i].EVENT_TYPE;
+
+                        // This is probably broken a lil
+                        if (!(prevEventType == "STOP" || currType == "START")) {
+                            var deltaTime = (currTime-prevTime)/60000;
+                            prevTime = currTime;
+                            switch (vmType) {
+                                case "BASIC":
+                                    totalCharges += deltaTime*0.05;
+                                    break;
+                                case "LARGE":
+                                    totalCharges += deltaTime*0.10;
+                                    break;
+                                case "ULTRA":
+                                    totalCharges += deltaTime*0.15;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else if (prevEventType == "STOP" && currType == "START") {
+                            prevTime = currTime;
+                        }
+
+                        vmType = rows[i].VM_TYPE;
+                        prevEventType = currType;
+                    }
+                    return res.json({charges: totalCharges})
+                } catch (e) {
+                    console.log(e);
+                    return res.json({error: e});
+                }
+            }
+        });
     });
 
 vm
