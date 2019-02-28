@@ -6,6 +6,9 @@ const format = require("util").format;
 var uuid = require("uuid");
 var mysql = require('mysql');
 
+var CloudUsageHelper = require('./CloudUsageHelper.js');
+var CUH = new CloudUsageHelper(process.env.CUM_HOST);
+
 if (process.env.ENVIRO != "PROD") {
     require('dotenv').config()
 }
@@ -99,7 +102,8 @@ vm
         return res.json({success: false});
     })
     .post("/start", (req, res) => {
-        return res.json({success: false});
+        CUH.logEvent(100, 101, "START", "BASIC");
+        return res.json({success: true});
     })
     .post("/stop", (req, res) => {
         return res.json({success: false});
