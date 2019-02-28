@@ -43,7 +43,7 @@ user
         connection.query("SELECT * FROM USERS WHERE USER_ID = '" + req.body.user + "' AND USER_PASSWORD = '" + req.body.password + "'", function (err, rows, fields) {
             if (err) throw err
             if (rows.length > 0) {
-                return res.json({success: true});
+                return res.json({success: true, user_key: rows[0].USER_KEY});
             }
             return res.json({success: false});
           })
@@ -61,7 +61,7 @@ user
                         var currTime = new Date(rows[i].EVENT_TIME).getTime();
                         var currType = rows[i].EVENT_TYPE;
 
-                        // This is probably broken a lil... 
+                        // This is probably broken a lil...
                         // We don't care if the VM was stopped beforehand.
                         // We also don't care if we're just starting the VM.
                         if (!(prevEventType == "STOP" || currType == "START")) {
