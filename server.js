@@ -23,7 +23,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 var port = process.env.PORT || 3003;
-var login = express.Router();
+var user = express.Router();
+var vm = express.Router();
 var router = express.Router();
 
 app.use(function(req, res, next) {
@@ -42,19 +43,46 @@ router
         res.send(req.body.paramname);
     });
 
-login
-    .post("/", (req, res) => {
+user
+    .post("/login", (req, res) => {
         connection.query("SELECT * FROM USERS WHERE USER_ID = '" + req.body.user + "' AND USER_PASSWORD = '" + req.body.password + "'", function (err, rows, fields) {
             if (err) throw err
             if (rows.length > 0) {
-                return res.send("True");
+                return res.json({success: true});
             }
-            return res.send("False");
+            return res.json({success: false});
           })
+    })
+    .post("/charges", (req, res) => {
+        return res.json({success: false});
+    });
+
+vm
+    .post("/create", (req, res) => {
+        return res.json({success: false});
+    })
+    .post("/start", (req, res) => {
+        return res.json({success: false});
+    })
+    .post("/stop", (req, res) => {
+        return res.json({success: false});
+    })
+    .post("/delete", (req, res) => {
+        return res.json({success: false});
+    })
+    .post("/upgrade", (req, res) => {
+        return res.json({success: false});
+    })
+    .post("/downgrade", (req, res) => {
+        return res.json({success: false});
+    })
+    .post("/usage", (req, res) => {
+        return res.json({success: false});
     });
 
 // This will serve the webpage
 app.use(express.static("./src"));
 app.use("/api", router);
-app.use("/login", login);
+app.use("/user", user);
+app.use("/vm", vm);
 app.listen(port, () => console.log("Listening on port " + port));
