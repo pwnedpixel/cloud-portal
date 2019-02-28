@@ -8,6 +8,14 @@
 		<button onclick="login()">Submit</button>
 	</div>
 	<div id="vim" style="display:none">
-		THIS IS THE MANAGEMENT CONSOLE
+		<h1>WELCOME TO THE MANAGEMENT CONSOLE</h1>
+		<h3>Create a new VM</h3>
+		<button onclick="createVM('BASIC')">Create Basic</button>
+		<button	onclick="createVM('LARGE')">Create Large</button>
+		<button onclick="createVM('ULTRA_LARGE')">Create Ultra Large</button>
+		<h3>VM Management</h3>
+		<div id="vms"></div>
+
+
 	</div>
 </body

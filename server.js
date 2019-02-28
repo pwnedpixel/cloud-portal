@@ -101,7 +101,15 @@ user
 
 vm
     .post("/create", (req, res) => {
-        return res.json({success: false});
+        console.log("creating "+req.body.vm_type+" for "+req.body.user_key)
+        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`OWNER_ID`, `VM_TYPE`) VALUES ('"+req.body.user_key+"', '"+req.body.vm_type+"')", function (err, rows, fields) {
+            if (err) {
+                return res.json({success: false});
+                throw err
+            } else {
+                return res.json({success: true});
+            }
+          });
     })
     .post("/start", (req, res) => {
         return res.json({success: false});
