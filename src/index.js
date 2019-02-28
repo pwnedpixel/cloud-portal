@@ -1,5 +1,5 @@
-// VIM_IP = "https://cloud-ass-2-vim.herokuapp.com"
-VIM_IP = "http://localhost:3003"
+VIM_IP = "https://cloud-ass-2-vim.herokuapp.com"
+// VIM_IP = "http://localhost:3003"
 
 login = async() => {
 	username = document.getElementById("username").value;
@@ -17,7 +17,7 @@ login = async() => {
   if (myJson.success == true) {
 	  document.getElementById("vim").setAttribute("style","")
 	  document.getElementById("login-frame").setAttribute("style","display:none")
-	  user_key = myJson.user_key
+	  cc_id = myJson.cc_id
 	  populateVMList();
   } else [
 	  alert("Invalid username/password")
@@ -25,7 +25,7 @@ login = async() => {
 }
 
 createVM = async(type) => {
-	body = {vm_type:type, user_key:user_key};
+	body = {vm_type:type, cc_id:cc_id};
 	const response = await fetch(VIM_IP+"/vm/create", {
 	method: 'POST',
     body: JSON.stringify(body), // string or object
@@ -41,4 +41,4 @@ populateVMList =() => {
 
 }
 
-var user_key = ""
+var cc_id = ""

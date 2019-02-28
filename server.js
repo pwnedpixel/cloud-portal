@@ -43,7 +43,7 @@ user
         connection.query("SELECT * FROM USERS WHERE USER_ID = '" + req.body.user + "' AND USER_PASSWORD = '" + req.body.password + "'", function (err, rows, fields) {
             if (err) throw err
             if (rows.length > 0) {
-                return res.json({success: true, user_key: rows[0].USER_KEY});
+                return res.json({success: true, cc_id: rows[0].CC_ID});
             }
             return res.json({success: false});
           })
@@ -101,8 +101,8 @@ user
 
 vm
     .post("/create", (req, res) => {
-        console.log("creating "+req.body.vm_type+" for "+req.body.user_key);
-        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`OWNER_ID`, `VM_TYPE`) VALUES ('"+req.body.user_key+"', '"+req.body.vm_type+"')", function (err, rows, fields) {
+        console.log("creating "+req.body.vm_type+" for "+req.body.cc_id);
+        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`) VALUES ('"+req.body.cc_id+"', '"+req.body.vm_type+"')", function (err, rows, fields) {
             if (err) {
                 return res.json({success: false});
                 throw err
