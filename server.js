@@ -61,9 +61,11 @@ user
                         var currTime = new Date(rows[i].EVENT_TIME).getTime();
                         var currType = rows[i].EVENT_TYPE;
 
-                        // This is probably broken a lil
+                        // This is probably broken a lil... 
+                        // We don't care if the VM was stopped beforehand.
+                        // We also don't care if we're just starting the VM.
                         if (!(prevEventType == "STOP" || currType == "START")) {
-                            var deltaTime = (currTime-prevTime)/60000;
+                            var deltaTime = (currTime-prevTime)/60000; // minutes
                             prevTime = currTime;
                             switch (vmType) {
                                 case "BASIC":
@@ -78,10 +80,12 @@ user
                                 default:
                                     break;
                             }
+                        // Update the timestamp if we're between VMs
                         } else if (prevEventType == "STOP" && currType == "START") {
                             prevTime = currTime;
                         }
 
+                        // Update the VM type and previous event type with current.
                         vmType = rows[i].VM_TYPE;
                         prevEventType = currType;
                     }
@@ -91,6 +95,7 @@ user
                     return res.json({error: e});
                 }
             }
+            return res.json();
         });
     });
 
@@ -114,7 +119,23 @@ vm
         return res.json({success: false});
     })
     .post("/usage", (req, res) => {
-        return res.json({success: false});
+        connection.query("SELECT EVENT_TIME FROM cloudass2.EVENTS WHERE CC_ID = '" + req.body.user + "' AND VM_ID = '" + req.body.vm_id + "'", (err, rows, fields) => {
+            if (err) throw err;
+            var deltaTime = 0;
+            if (rows.length > 1) {
+                try {
+                    // Get total usage time for VM by getting delta time of last & first rows.
+                    var firstTime = new Date(rows[0].EVENT_TIME).getTime();
+                    var lastTime = new Date(rows[rows.length-1].EVENT_TIME).getTime();
+                    var deltaTime = (lastTime-firstTime)/60000; // minutes
+                    return res.json({usage: deltaTime});
+                } catch (e) {
+                    console.log(e);
+                    return res.json({error: e});
+                }
+            }
+            return res.json();
+        });
     });
 
 // This will serve the webpage
