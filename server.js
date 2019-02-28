@@ -46,7 +46,7 @@ user
         connection.query("SELECT * FROM USERS WHERE USER_ID = '" + req.body.user + "' AND USER_PASSWORD = '" + req.body.password + "'", function (err, rows, fields) {
             if (err) throw err
             if (rows.length > 0) {
-                return res.json({success: true});
+                return res.json({success: true, cc_id: rows[0].CC_ID});
             }
             return res.json({success: false});
           })
@@ -64,9 +64,11 @@ user
                         var currTime = new Date(rows[i].EVENT_TIME).getTime();
                         var currType = rows[i].EVENT_TYPE;
 
-                        // This is probably broken a lil
+                        // This is probably broken a lil...
+                        // We don't care if the VM was stopped beforehand.
+                        // We also don't care if we're just starting the VM.
                         if (!(prevEventType == "STOP" || currType == "START")) {
-                            var deltaTime = (currTime-prevTime)/60000;
+                            var deltaTime = (currTime-prevTime)/60000; // minutes
                             prevTime = currTime;
                             switch (vmType) {
                                 case "BASIC":
@@ -81,10 +83,12 @@ user
                                 default:
                                     break;
                             }
+                        // Update the timestamp if we're between VMs
                         } else if (prevEventType == "STOP" && currType == "START") {
                             prevTime = currTime;
                         }
 
+                        // Update the VM type and previous event type with current.
                         vmType = rows[i].VM_TYPE;
                         prevEventType = currType;
                     }
@@ -94,12 +98,21 @@ user
                     return res.json({error: e});
                 }
             }
+            return res.json();
         });
     });
 
 vm
     .post("/create", (req, res) => {
-        return res.json({success: false});
+        console.log("creating "+req.body.vm_type+" for "+req.body.cc_id);
+        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`) VALUES ('"+req.body.cc_id+"', '"+req.body.vm_type+"')", function (err, rows, fields) {
+            if (err) {
+                return res.json({success: false});
+                throw err
+            } else {
+                return res.json({success: true});
+            }
+          });
     })
     .post("/start", (req, res) => {
         CUH.logEvent(100, 101, "START", "BASIC");
@@ -109,7 +122,14 @@ vm
         return res.json({success: false});
     })
     .post("/delete", (req, res) => {
-        return res.json({success: false});
+        connection.query("DELETE FROM `cloudass2`.`VIRTUAL_MACHINES` WHERE (`VM_ID` = '" + req.body.vm_id + "' AND `CC_ID` = " + req.body.user + "')", function (err, rows, fields) {
+            if (err) {
+                return res.json({success: false});
+                throw err
+            } else {
+                return res.json({success: true});
+            }
+          });
     })
     .post("/upgrade", (req, res) => {
         return res.json({success: false});
@@ -118,7 +138,23 @@ vm
         return res.json({success: false});
     })
     .post("/usage", (req, res) => {
-        return res.json({success: false});
+        connection.query("SELECT EVENT_TIME FROM cloudass2.EVENTS WHERE CC_ID = '" + req.body.user + "' AND VM_ID = '" + req.body.vm_id + "'", (err, rows, fields) => {
+            if (err) throw err;
+            var deltaTime = 0;
+            if (rows.length > 1) {
+                try {
+                    // Get total usage time for VM by getting delta time of last & first rows.
+                    var firstTime = new Date(rows[0].EVENT_TIME).getTime();
+                    var lastTime = new Date(rows[rows.length-1].EVENT_TIME).getTime();
+                    var deltaTime = (lastTime-firstTime)/60000; // minutes
+                    return res.json({usage: deltaTime});
+                } catch (e) {
+                    console.log(e);
+                    return res.json({error: e});
+                }
+            }
+            return res.json();
+        });
     });
 
 // This will serve the webpage

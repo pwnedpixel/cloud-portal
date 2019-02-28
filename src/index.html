@@ -7,4 +7,15 @@
 		password: <input id="password" placeholder="password" type="password">
 		<button onclick="login()">Submit</button>
 	</div>
+	<div id="vim" style="display:none">
+		<h1>WELCOME TO THE MANAGEMENT CONSOLE</h1>
+		<h3>Create a new VM</h3>
+		<button onclick="createVM('BASIC')">Create Basic</button>
+		<button	onclick="createVM('LARGE')">Create Large</button>
+		<button onclick="createVM('ULTRA')">Create Ultra Large</button>
+		<h3>VM Management</h3>
+		<div id="vms"></div>
+
+
+	</div>
 </body
