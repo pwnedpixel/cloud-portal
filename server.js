@@ -7,11 +7,12 @@ var uuid = require("uuid");
 var mysql = require('mysql');
 
 var CloudUsageHelper = require('./CloudUsageHelper.js');
-var CUH = new CloudUsageHelper(process.env.CUM_HOST);
 
 if (process.env.ENVIRO != "PROD") {
     require('dotenv').config()
 }
+
+var CUH = new CloudUsageHelper(process.env.CUM_HOST);
 
 var connection = mysql.createConnection({
     host     : process.env.DB_HOST,
