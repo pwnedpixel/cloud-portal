@@ -74,6 +74,20 @@ user
     });
 
 vm
+    .get("/:cc_id", (req, res) => {
+        var cc_id = req.params.cc_id;
+        connection.query("SELECT * FROM cloudass2.VIRTUAL_MACHINES WHERE CC_ID = '"+cc_id+"';", function (err, rows, fields) {
+            if (err) {
+                return res.json({success: false});
+            } else {
+                var vmList = []
+                for (var row of rows) {
+                    vmList.push(row);
+                }
+                res.json(JSON.stringify(vmList));
+            }
+        });
+    })
     .post("/create", (req, res) => {
         var insertParams = [req.body.cc_id, req.body.vm_type];
         connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`) VALUES (?, ?)", insertParams, function (err, rows, fields) {

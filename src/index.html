@@ -1,5 +1,6 @@
 <header>
 	<script src="index.js"></script>
+	<link rel="stylesheet" href="styles.css">
 </header>
 <body>
 	<div id="login-frame">
@@ -14,7 +15,13 @@
 		<button	onclick="createVM('LARGE')">Create Large</button>
 		<button onclick="createVM('ULTRA')">Create Ultra Large</button>
 		<h3>VM Management</h3>
-		<div id="vms"></div>
+		<table id="vms">
+			<tr>
+				<th>ID</th>
+				<th>Type</th>
+				<th>Actions</th>
+			</tr>
+		</table>
 
 
 	</div>

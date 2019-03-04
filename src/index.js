@@ -8,7 +8,7 @@ login = async() => {
 
 	const response = await fetch(VIM_IP+"/user/login", {
 	method: 'POST',
-    body: JSON.stringify(body), // string or object
+    body: JSON.stringify(body),
     headers:{
       'Content-Type': 'application/json'
     }
@@ -28,7 +28,7 @@ createVM = async(type) => {
 	body = {vm_type:type, cc_id:cc_id};
 	const response = await fetch(VIM_IP+"/vm/create", {
 	method: 'POST',
-    body: JSON.stringify(body), // string or object
+    body: JSON.stringify(body),
     headers:{
       'Content-Type': 'application/json'
     }
@@ -36,9 +36,33 @@ createVM = async(type) => {
   const myJson = await response.json();
 }
 
-populateVMList =() => {
-	vmList = document.getElementById("vms");
+populateVMList = async() => {
+	var vmTable = document.getElementById("vms");
+  const response = await fetch(VIM_IP+"/vm/"+cc_id);
+  vmList = await response.json();
+  for (var vm of JSON.parse(vmList)){
+    var tr = document.createElement("tr");
 
+    // Add the id column
+    var id_col = document.createElement("td");
+    id_col.textContent = vm.VM_ID;
+    // Add the type column
+    var size_col = document.createElement("td");
+    size_col.textContent = vm.VM_TYPE;
+    // Add the Actions column
+    var actions_col = document.createElement("td");
+    var start_button = document.createElement("button");
+    var stop_button = document.createElement("button");
+    var delete_button = document.createElement("button");
+    var upgrade_button = document.createElement("button");
+    var downgrade_button = document.createElement("button");
+    var start_button = document.createElement("button");
+
+    tr.appendChild(id_col);
+    tr.appendChild(size_col);
+    vmTable.appendChild(tr);
+  }
 }
 
 var cc_id = ""
+var vmList = []
