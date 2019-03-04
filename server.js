@@ -44,8 +44,9 @@ router
 
 user
     .post("/login", (req, res) => {
-        connection.query("SELECT * FROM USERS WHERE USER_ID = '" + req.body.user + "' AND USER_PASSWORD = '" + req.body.password + "'", function (err, rows, fields) {
-            if (err) throw err
+        var insertParams = [req.body.user, req.body.password];
+        connection.query("SELECT * FROM USERS WHERE USER_ID = ? AND USER_PASSWORD = ?", insertParams, function (err, rows, fields) {
+            if (err) throw err;
             if (rows.length > 0) {
                 return res.json({success: true, cc_id: rows[0].CC_ID});
             }
@@ -53,7 +54,7 @@ user
           })
     })
     .post("/charges", (req, res) => {
-        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = '" + req.body.user + "'", (err, rows, fields) => {
+        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ?", req.body.cc_id, (err, rows, fields) => {
             if (err) throw err;
             var totalCharges = 0;
             if (rows.length > 0) {
@@ -65,7 +66,8 @@ user
                         var currTime = new Date(rows[i].EVENT_TIME).getTime();
                         var currType = rows[i].EVENT_TYPE;
 
-                        // This is probably broken a lil...
+                        // We don't care if the VM was created :-).
+                        if (currType == "CREATE") continue;
                         // We don't care if the VM was stopped beforehand.
                         // We also don't care if we're just starting the VM.
                         if (!(prevEventType == "STOP" || currType == "START")) {
@@ -105,46 +107,66 @@ user
 
 vm
     .post("/create", (req, res) => {
-        console.log("creating "+req.body.vm_type+" for "+req.body.cc_id);
-        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`) VALUES ('"+req.body.cc_id+"', '"+req.body.vm_type+"')", function (err, rows, fields) {
+        var insertParams = [req.body.cc_id, req.body.vm_type];
+        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`) VALUES (?, ?)", insertParams, function (err, rows, fields) {
             if (err) {
                 return res.json({success: false});
-                throw err
+                throw err;
             } else {
+                CUH.logEvent(req.body.cc_id, rows.insertId, "CREATE", req.body.vm_type);
                 return res.json({success: true});
             }
           });
     })
     .post("/start", (req, res) => {
-        CUH.logEvent(100, 101, "START", "BASIC");
+        CUH.logEvent(req.body.cc_id, req.body.vm_id, "START", req.body.vm_type);
         return res.json({success: true});
     })
     .post("/stop", (req, res) => {
+        CUH.logEvent(req.body.cc_id, req.body.vm_id, "STOP", req.body.vm_type);
         return res.json({success: false});
     })
     .post("/delete", (req, res) => {
-        connection.query("DELETE FROM `cloudass2`.`VIRTUAL_MACHINES` WHERE (`VM_ID` = '" + req.body.vm_id + "' AND `CC_ID` = " + req.body.user + "')", function (err, rows, fields) {
+        var insertParams = [req.body.vm_id, req.body.cc_id];
+        connection.query("DELETE FROM `cloudass2`.`VIRTUAL_MACHINES` WHERE (`VM_ID` = ? AND `CC_ID` = ?)", insertParams, function (err, rows, fields) {
             if (err) {
+                throw err;
                 return res.json({success: false});
-                throw err
             } else {
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "DELETE", req.body.vm_type);
                 return res.json({success: true});
             }
           });
     })
     .post("/upgrade", (req, res) => {
-        return res.json({success: false});
+        var insertParams = [req.body.vm_type, req.body.vm_id];
+        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_TYPE` = ? WHERE (`VM_ID` = ?)", insertParams, function (err, rows, fields) {
+            if (err) throw err;
+            else {
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "SCALE", req.body.vm_type);
+                return res.json({success: true});
+            }
+        });
     })
     .post("/downgrade", (req, res) => {
-        return res.json({success: false});
+        var insertParams = [req.body.vm_type, req.body.vm_id];
+        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_TYPE` = ? WHERE (`VM_ID` = ?)", insertParams, function (err, rows, fields) {
+            if (err) throw err;
+            else {
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "SCALE", req.body.vm_type);
+                return res.json({success: true});
+            }
+        });
     })
     .post("/usage", (req, res) => {
-        connection.query("SELECT EVENT_TIME FROM cloudass2.EVENTS WHERE CC_ID = '" + req.body.user + "' AND VM_ID = '" + req.body.vm_id + "'", (err, rows, fields) => {
+        var insertParams = [req.body.user, req.body.vm_id];
+        connection.query("SELECT EVENT_TIME, EVENT_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ? AND VM_ID = ?", insertParams, (err, rows, fields) => {
             if (err) throw err;
             var deltaTime = 0;
             if (rows.length > 1) {
                 try {
-                    // Get total usage time for VM by getting delta time of last & first rows.
+                    // Get total usage time for VM by getting start/stop intervals.
+                    // TODO : make this work properly 
                     var firstTime = new Date(rows[0].EVENT_TIME).getTime();
                     var lastTime = new Date(rows[rows.length-1].EVENT_TIME).getTime();
                     var deltaTime = (lastTime-firstTime)/60000; // minutes
@@ -154,7 +176,9 @@ vm
                     return res.json({error: e});
                 }
             }
-            return res.json();
+            else {
+                return res.json({success: false});
+            }
         });
     });
 
