@@ -7,14 +7,14 @@ var uuid = require("uuid");
 var mysql = require('mysql');
 
 var CloudUsageHelper = require('./CloudUsageHelper.js');
-var ChargeCalculator = require('./ChargeCalculator.js');
+var UsageCalculator = require('./UsageCalculator.js');
 
 if (process.env.ENVIRO != "PROD") {
     require('dotenv').config()
 }
 
 var CUH = new CloudUsageHelper(process.env.CUM_HOST);
-var ChargeCalc = new ChargeCalculator();
+var UsageCalc = new UsageCalculator();
 
 var connection = mysql.createConnection({
     host     : process.env.DB_HOST,
@@ -59,8 +59,13 @@ user
         connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ?", req.body.cc_id, (err, rows, fields) => {
             if (err) throw err;
             try {
-                var totalCharges = ChargeCalc.calculateCharges(rows);
-                return res.json({charges: totalCharges})
+                var usages = UsageCalc.calculateUsages(rows);
+                var charges = {
+                    basicCharges: Math.floor(usages.basicUsage*0.05 * 100) / 100,
+                    largeCharges: Math.floor(usages.largeUsage*0.10 * 100) / 100,
+                    ultraCharges: Math.floor(usages.ultraUsage*0.15 * 100) / 100
+                }
+                return res.json(charges);
             } catch (e) {
                 console.log(e);
                 return res.json({error: e});
@@ -122,12 +127,12 @@ vm
         });
     })
     .post("/usage", (req, res) => {
-        var insertParams = [req.body.user, req.body.vm_id];
+        var insertParams = [req.body.cc_id, req.body.vm_id];
         connection.query("SELECT EVENT_TIME, EVENT_TYPE, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ? AND VM_ID = ?", insertParams, (err, rows, fields) => {
             if (err) throw err;
             try {
-                var totalCharges = ChargeCalc.calculateCharges(rows);
-                return res.json({charges: totalCharges})
+                var usages = UsageCalc.calculateUsages(rows);
+                return res.json(usages);
             } catch (e) {
                 console.log(e);
                 return res.json({error: e});
