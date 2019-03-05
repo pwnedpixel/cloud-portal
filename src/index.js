@@ -153,8 +153,13 @@ vmUsage = async(event) => {
 }
 
 displayUsages = async(usageResponse, id) => {
-  console.log(id);
-  var usageStr = "Basic: " + usageResponse.basicUsage + " min, Large: " + usageResponse.largeUsage + " min, Ultra: " + usageResponse.ultraUsage + " min";
+  var usageStr = "Basic: " + 
+                Math.floor(usageResponse.basicUsage*100)/100 + 
+                " min, Large: " + 
+                Math.floor(usageResponse.largeUsage*100)/100 + 
+                " min, Ultra: " + 
+                Math.floor(usageResponse.ultraUsage*100)/100 + 
+                " min";
   var monitorData = document.getElementById("monitor_" + id);
   monitorData.innerText = usageStr;
 }
