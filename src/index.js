@@ -87,7 +87,7 @@ populateVMList = async() => {
     upgrade_button.innerText = "Upgrade";
     upgrade_button.id = vm.VM_ID;
     upgrade_button.onclick = (event) => {upgradeVM(event)};
-    if (vm.VM_TYPE == "ULTRA") {
+    if (vm.VM_TYPE == "ULTRA" || vm.VM_STATE == "STOP") {
       upgrade_button.disabled = true;
     }
     // Downgrade button
@@ -95,7 +95,7 @@ populateVMList = async() => {
     downgrade_button.innerText = "Downgrade";
     downgrade_button.id = vm.VM_ID;
     downgrade_button.onclick = (event) => {downgradeVM(event)};
-    if (vm.VM_TYPE == "BASIC") {
+    if (vm.VM_TYPE == "BASIC" || vm.VM_STATE == "STOP") {
       downgrade_button.disabled = true;
     }
     // Usage button
@@ -280,12 +280,14 @@ displayTotalCost = async(costResponse) => {
   var chargesTable = document.getElementById("charges");
   var rows = chargesTable.getElementsByTagName('tr');
   var numRows = rows.length;
+  // Refresh calculations row.
   if (numRows > 1) {
     chargesTable.removeChild(rows[1]);
   }
   var headers = document.getElementById("header-charges");
   chargesTable.appendChild(headers);
   var tr = document.createElement("tr");
+  // Format with $ because monies.
   var basicCol = document.createElement("td");
   basicCol.textContent = "$" + costResponse.basicCharges;
   var largeCol = document.createElement("td");
