@@ -90,7 +90,7 @@ vm
     })
     .post("/create", (req, res) => {
         var insertParams = [req.body.cc_id, req.body.vm_type];
-        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`) VALUES (?, ?)", insertParams, function (err, rows, fields) {
+        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`,`VM_STATE) VALUES (?, ?, 'STOP')", insertParams, function (err, rows, fields) {
             if (err) {
                 return res.json({success: false});
                 throw err;
@@ -101,12 +101,26 @@ vm
           });
     })
     .post("/start", (req, res) => {
-        CUH.logEvent(req.body.cc_id, req.body.vm_id, "START", req.body.vm_type);
-        return res.json({success: true});
+        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_STATE` = 'START' WHERE (`VM_ID` = '"+req.body.vm_id+"');", function (err, rows, fields) {
+            if (err) {
+                throw err;
+                return res.json({success: false});
+            } else {
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "START", req.body.vm_type);
+                return res.json({success: true});
+            }
+          });
     })
     .post("/stop", (req, res) => {
-        CUH.logEvent(req.body.cc_id, req.body.vm_id, "STOP", req.body.vm_type);
-        return res.json({success: false});
+        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_STATE` = 'STOP' WHERE (`VM_ID` = '"+req.body.vm_id+"');", function (err, rows, fields) {
+            if (err) {
+                throw err;
+                return res.json({success: false});
+            } else {
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "STOP", req.body.vm_type);
+                return res.json({success: true});
+            }
+          });
     })
     .post("/delete", (req, res) => {
         var insertParams = [req.body.vm_id, req.body.cc_id];

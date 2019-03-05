@@ -13,11 +13,11 @@ login = async() => {
       'Content-Type': 'application/json'
     }
   });
-  const myJson = await response.json();
-  if (myJson.success == true) {
+  const loginResponse = await response.json();
+  if (loginResponse.success == true) {
 	  document.getElementById("vim").setAttribute("style","")
 	  document.getElementById("login-frame").setAttribute("style","display:none")
-	  cc_id = myJson.cc_id
+	  cc_id = loginResponse.cc_id
 	  populateVMList();
   } else [
 	  alert("Invalid username/password")
@@ -38,6 +38,9 @@ createVM = async(type) => {
 
 populateVMList = async() => {
 	var vmTable = document.getElementById("vms");
+  var headers = document.getElementById("header-row");
+  vmTable.innerHTML="";
+  vmTable.appendChild(headers);
   const response = await fetch(VIM_IP+"/vm/"+cc_id);
   vmList = await response.json();
   for (var vm of JSON.parse(vmList)){
@@ -51,17 +54,71 @@ populateVMList = async() => {
     size_col.textContent = vm.VM_TYPE;
     // Add the Actions column
     var actions_col = document.createElement("td");
-    var start_button = document.createElement("button");
+
+    // Buttons
+    // Start Button
+    var start_button = document.createElement("BUTTON");
+    start_button.innerText = "Start";
+    start_button.id = vm.VM_ID;
+    start_button.onclick = (event) => {startVM(event)};
+    if (vm.VM_STATE == "START") {
+      start_button.disabled = true;
+    }
+    // Stop button
     var stop_button = document.createElement("button");
+    stop_button.innerText = "Stop";
+    stop_button.onclick = () => {stopVM(vm)};
+    if (vm.VM_STATE == "STOP") {
+      stop_button.disabled = true;
+    }
+
+
     var delete_button = document.createElement("button");
     var upgrade_button = document.createElement("button");
     var downgrade_button = document.createElement("button");
-    var start_button = document.createElement("button");
+    actions_col.appendChild(start_button);
+    actions_col.appendChild(stop_button);
+
 
     tr.appendChild(id_col);
     tr.appendChild(size_col);
+    tr.appendChild(actions_col);
     vmTable.appendChild(tr);
   }
+}
+
+startVM = async(event) => {
+  console.log("start: "+event.target.id);
+  console.log(vmList)
+  vm = vmList.find(element => element.VM_ID == event.target.id)[0];
+  body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
+  const response = await fetch(VIM_IP+"/vm/start", {
+    method: 'POST',
+      body: JSON.stringify(body),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+    const startResponse = await response.json();
+    if (startResponse.success) {
+      populateVMList()
+    }
+}
+
+stopVM = async(vm) => {
+  console.log("stop: "+vm);
+  body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
+  const response = await fetch(VIM_IP+"/vm/stop", {
+    method: 'POST',
+      body: JSON.stringify(body),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+    const stopResponse = await response.json();
+    if (stopResponse.success) {
+      populateVMList()
+    }
 }
 
 var cc_id = ""
