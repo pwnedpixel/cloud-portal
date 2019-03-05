@@ -82,17 +82,33 @@ populateVMList = async() => {
     delete_button.innerText = "Delete";
     delete_button.id = vm.VM_ID;
     delete_button.onclick = (event) => {deleteVM(event)};
+    // Upgrade button
+    var upgrade_button = document.createElement("button");
+    upgrade_button.innerText = "Upgrade";
+    upgrade_button.id = vm.VM_ID;
+    upgrade_button.onclick = (event) => {upgradeVM(event)};
+    if (vm.VM_TYPE == "ULTRA") {
+      upgrade_button.disabled = true;
+    }
+    // Downgrade button
+    var downgrade_button = document.createElement("button");
+    downgrade_button.innerText = "Downgrade";
+    downgrade_button.id = vm.VM_ID;
+    downgrade_button.onclick = (event) => {downgradeVM(event)};
+    if (vm.VM_TYPE == "BASIC") {
+      downgrade_button.disabled = true;
+    }
     // Usage button
     var usage_button = document.createElement("button");
     usage_button.innerText = "Usage (minutes)";
     usage_button.id = vm.VM_ID;
     usage_button.onclick = (event) => {vmUsage(event)};
 
-    var upgrade_button = document.createElement("button");
-    var downgrade_button = document.createElement("button");
     actions_col.appendChild(start_button);
     actions_col.appendChild(stop_button);
     actions_col.appendChild(delete_button);
+    actions_col.appendChild(upgrade_button);
+    actions_col.appendChild(downgrade_button);
     actions_col.appendChild(usage_button);
 
 
@@ -151,6 +167,62 @@ deleteVM = async(event) => {
     });
     const deleteResponse = await response.json();
     if (deleteResponse.success) {
+      populateVMList();
+    }
+}
+
+upgradeVM = async(event) => {
+  console.log("upgrade: "+event.target.id);
+  vm = vmList.find(element => element.VM_ID == event.target.id);
+  switch (vm.VM_TYPE) {
+    case "BASIC":
+      vm.VM_TYPE = "LARGE"
+      break;
+    case "LARGE":
+      vm.VM_TYPE = "ULTRA"
+      break;
+    default:
+      return;
+  }
+  body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
+  const response = await fetch(VIM_IP+"/vm/upgrade", {
+    method: 'POST',
+      body: JSON.stringify(body),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+    const upgradeResponse = await response.json();
+    if (upgradeResponse.success) {
+      populateVMList();
+    }
+}
+
+downgradeVM = async(event) => {
+  console.log("downgrade: "+event.target.id);
+  vm = vmList.find(element => element.VM_ID == event.target.id);
+  console.log(vm.VM_TYPE)
+  switch (vm.VM_TYPE) {
+    case "LARGE":
+      vm.VM_TYPE = "BASIC"
+      break;
+    case "ULTRA":
+      vm.VM_TYPE = "LARGE"
+      break;
+    default:
+      return;
+  }
+
+  body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
+  const response = await fetch(VIM_IP+"/vm/downgrade", {
+    method: 'POST',
+      body: JSON.stringify(body),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+    const downgradeResponse = await response.json();
+    if (downgradeResponse.success) {
       populateVMList();
     }
 }
