@@ -124,7 +124,7 @@ vm
     })
     .post("/delete", (req, res) => {
         var insertParams = [req.body.vm_id, req.body.cc_id];
-        connection.query("DELETE FROM `cloudass2`.`VIRTUAL_MACHINES` WHERE (`VM_ID` = ? AND `CC_ID` = ?)", insertParams, function (err, rows, fields) {
+        connection.query("DELETE FROM `cloudass2`.`VIRTUAL_MACHINES` WHERE (`VM_ID` = '"+req.body.vm_id+"');", function (err, rows, fields) {
             if (err) {
                 throw err;
                 return res.json({success: false});

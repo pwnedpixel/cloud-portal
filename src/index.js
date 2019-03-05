@@ -77,17 +77,22 @@ populateVMList = async() => {
     if (vm.VM_STATE == "STOP") {
       stop_button.disabled = true;
     }
+    // Delete button
+    var delete_button = document.createElement("button");
+    delete_button.innerText = "Delete";
+    delete_button.id = vm.VM_ID;
+    delete_button.onclick = (event) => {deleteVM(event)};
     // Usage button
     var usage_button = document.createElement("button");
     usage_button.innerText = "Usage (minutes)";
     usage_button.id = vm.VM_ID;
     usage_button.onclick = (event) => {vmUsage(event)};
 
-    var delete_button = document.createElement("button");
     var upgrade_button = document.createElement("button");
     var downgrade_button = document.createElement("button");
     actions_col.appendChild(start_button);
     actions_col.appendChild(stop_button);
+    actions_col.appendChild(delete_button);
     actions_col.appendChild(usage_button);
 
 
@@ -129,7 +134,24 @@ stopVM = async(event) => {
     });
     const stopResponse = await response.json();
     if (stopResponse.success) {
-      populateVMList()
+      populateVMList();
+    }
+}
+
+deleteVM = async(event) => {
+  console.log("delete: "+event.target.id);
+  vm = vmList.find(element => element.VM_ID == event.target.id);
+  body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
+  const response = await fetch(VIM_IP+"/vm/delete", {
+    method: 'POST',
+      body: JSON.stringify(body),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+    const deleteResponse = await response.json();
+    if (deleteResponse.success) {
+      populateVMList();
     }
 }
 
