@@ -53,7 +53,7 @@ class UsageCalculator {
             // This is disgusting, but we're returning the saved timestamps as local (not UTC)
             // so it adds five hours when it tries to convert the time to UTC.
             // So I'm just converting it to the real thing by subtracting five hours. *vomit*
-            var lastRecordTime = new Date(rows[rows.length-1].EVENT_TIME).getTime() - 5*1000*60*60;
+            var lastRecordTime = new Date(rows[rows.length-1].EVENT_TIME).getTime();
             vmType = rows[rows.length-1].VM_TYPE;
             var deltaTime = (now-lastRecordTime)/60000; // minutes
             switch (vmType) {
