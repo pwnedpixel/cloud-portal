@@ -48,15 +48,17 @@ populateVMList = async() => {
 
   for (var vm of vmList){
     var tr = document.createElement("tr");
-
     // Add the id column
     var id_col = document.createElement("td");
     id_col.textContent = vm.VM_ID;
     // Add the type column
     var size_col = document.createElement("td");
     size_col.textContent = vm.VM_TYPE;
-    // Add the Actions column
+    // Add the Controls column
     var actions_col = document.createElement("td");
+    // Add the Monitoring column
+    var monitor_col = document.createElement("td");
+    monitor_col.id = "monitor_" + vm.VM_ID;
 
     // Buttons
     // Start Button
@@ -75,18 +77,24 @@ populateVMList = async() => {
     if (vm.VM_STATE == "STOP") {
       stop_button.disabled = true;
     }
-
+    // Usage button
+    var usage_button = document.createElement("button");
+    usage_button.innerText = "Usage (minutes)";
+    usage_button.id = vm.VM_ID;
+    usage_button.onclick = (event) => {vmUsage(event)};
 
     var delete_button = document.createElement("button");
     var upgrade_button = document.createElement("button");
     var downgrade_button = document.createElement("button");
     actions_col.appendChild(start_button);
     actions_col.appendChild(stop_button);
+    actions_col.appendChild(usage_button);
 
 
     tr.appendChild(id_col);
     tr.appendChild(size_col);
     tr.appendChild(actions_col);
+    tr.appendChild(monitor_col);
     vmTable.appendChild(tr);
   }
 }
@@ -125,6 +133,32 @@ stopVM = async(event) => {
     }
 }
 
+vmUsage = async(event) => {
+  vm = vmList.find(element => element.VM_ID == event.target.id);
+  body = { cc_id:cc_id, vm_id:vm.VM_ID };
+  const response = await fetch(VIM_IP+"/vm/usage", {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers:{
+      'Content-Type': 'application/json'
+    }
+  });
+  const usageResponse = await response.json();
+  if (!(usageResponse.error)) {
+    displayUsages(usageResponse, vm.VM_ID);
+  }
+  else {
+    alert('Error encountered: ' + usageResponse.error);
+  }
+}
+
+displayUsages = async(usageResponse, id) => {
+  console.log(id);
+  var usageStr = "Basic: " + usageResponse.basicUsage + " min, Large: " + usageResponse.largeUsage + " min, Ultra: " + usageResponse.ultraUsage + " min";
+  var monitorData = document.getElementById("monitor_" + id);
+  monitorData.innerText = usageStr;
+}
+
 calculateCosts = async() => {
   body = { cc_id:cc_id };
   const response = await fetch(VIM_IP+"/user/charges", {
@@ -135,8 +169,11 @@ calculateCosts = async() => {
       }
     });
     const costResponse = await response.json();
-    if (costResponse) {
+    if (!(costResponse.error)) {
       displayTotalCost(costResponse);
+    }
+    else {
+      alert('Error encountered: ' + costResponse.error);
     }
 }
 
