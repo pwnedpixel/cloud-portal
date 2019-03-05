@@ -89,9 +89,9 @@ vm
         });
     })
     .post("/create", (req, res) => {
-        var insertParams = [req.body.cc_id, req.body.vm_type];
-        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`,`VM_STATE) VALUES (?, ?, 'STOP')", insertParams, function (err, rows, fields) {
+        connection.query("INSERT INTO `cloudass2`.`VIRTUAL_MACHINES` (`CC_ID`, `VM_TYPE`, `VM_STATE`) VALUES ('"+req.body.cc_id+"', '"+req.body.vm_type+"', 'STOP');", function (err, rows, fields) {
             if (err) {
+                console.log(err)
                 return res.json({success: false});
                 throw err;
             } else {

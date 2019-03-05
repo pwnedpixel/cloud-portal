@@ -34,6 +34,7 @@ createVM = async(type) => {
     }
   });
   const myJson = await response.json();
+  populateVMList();
 }
 
 populateVMList = async() => {
@@ -43,7 +44,9 @@ populateVMList = async() => {
   vmTable.appendChild(headers);
   const response = await fetch(VIM_IP+"/vm/"+cc_id);
   vmList = await response.json();
-  for (var vm of JSON.parse(vmList)){
+  vmList = JSON.parse(vmList)
+
+  for (var vm of vmList){
     var tr = document.createElement("tr");
 
     // Add the id column
@@ -67,7 +70,8 @@ populateVMList = async() => {
     // Stop button
     var stop_button = document.createElement("button");
     stop_button.innerText = "Stop";
-    stop_button.onclick = () => {stopVM(vm)};
+    stop_button.id = vm.VM_ID;
+    stop_button.onclick = (event) => {stopVM(event)};
     if (vm.VM_STATE == "STOP") {
       stop_button.disabled = true;
     }
@@ -89,8 +93,7 @@ populateVMList = async() => {
 
 startVM = async(event) => {
   console.log("start: "+event.target.id);
-  console.log(vmList)
-  vm = vmList.find(element => element.VM_ID == event.target.id)[0];
+  vm = vmList.find(element => element.VM_ID == event.target.id);
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
   const response = await fetch(VIM_IP+"/vm/start", {
     method: 'POST',
@@ -105,8 +108,9 @@ startVM = async(event) => {
     }
 }
 
-stopVM = async(vm) => {
-  console.log("stop: "+vm);
+stopVM = async(event) => {
+  console.log("stop: "+event.target.id);
+  vm = vmList.find(element => element.VM_ID == event.target.id);
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
   const response = await fetch(VIM_IP+"/vm/stop", {
     method: 'POST',
