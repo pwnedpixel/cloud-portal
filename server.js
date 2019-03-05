@@ -79,7 +79,7 @@ user
                     groups.push(rows.slice(switchIndices[switchIndices.length-1], rows.length));
                 }
                 else {
-                    groups.push(rows[rows.length-1]);
+                    groups.push([rows[rows.length-1]]);
                 }
 
                 var totalUsage = {
