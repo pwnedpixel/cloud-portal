@@ -47,7 +47,7 @@ class UsageCalculator {
             vmType = rows[i].VM_TYPE;
             prevEventType = currType;
         }
-        if (!(prevEventType == "STOP" || prevEventType == "DELETE")) {
+        if (!(prevEventType == "STOP" || prevEventType == "DELETE" || prevEventType == "CREATE")) {
             // Calculate delta to time now!
             var now = Date.now();
             // This is disgusting, but we're returning the saved timestamps as local (not UTC)
