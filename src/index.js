@@ -121,5 +121,42 @@ stopVM = async(vm) => {
     }
 }
 
+calculateCosts = async() => {
+  body = { cc_id:cc_id };
+  const response = await fetch(VIM_IP+"/user/charges", {
+    method: 'POST',
+      body: JSON.stringify(body),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    });
+    const costResponse = await response.json();
+    if (costResponse) {
+      displayTotalCost(costResponse);
+    }
+}
+
+displayTotalCost = async(costResponse) => {
+  var chargesTable = document.getElementById("charges");
+  var rows = chargesTable.getElementsByTagName('tr');
+  var numRows = rows.length;
+  if (numRows > 1) {
+    chargesTable.removeChild(rows[1]);
+  }
+  var headers = document.getElementById("header-charges");
+  chargesTable.appendChild(headers);
+  var tr = document.createElement("tr");
+  var basicCol = document.createElement("td");
+  basicCol.textContent = "$" + costResponse.basicCharges;
+  var largeCol = document.createElement("td");
+  largeCol.textContent = "$" + costResponse.largeCharges;
+  var ultraCol = document.createElement("td");
+  ultraCol.textContent = "$" + costResponse.ultraCharges;
+  tr.appendChild(basicCol);
+  tr.appendChild(largeCol);
+  tr.appendChild(ultraCol);
+  chargesTable.appendChild(tr);
+}
+
 var cc_id = ""
 var vmList = []
