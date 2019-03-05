@@ -56,14 +56,49 @@ user
           })
     })
     .post("/charges", (req, res) => {
-        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ?", req.body.cc_id, (err, rows, fields) => {
+        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE, VM_ID FROM cloudass2.EVENTS WHERE CC_ID = ? ORDER BY VM_ID,EVENT_TIME", req.body.cc_id, (err, rows, fields) => {
             if (err) throw err;
             try {
-                var usages = UsageCalc.calculateUsages(rows);
+                // VMs are returned in order of VM_ID
+                // Partitioning into groups based on VM_ID.
+                var uniqueVMs = new Set();
+                var switchIndices = [];
+                for (var i = 0; i < rows.length; i++) {
+                    if (!(uniqueVMs.has(rows[i].VM_ID))){
+                        uniqueVMs.add(rows[i].VM_ID);
+                        switchIndices.push(i);
+                    }
+                }
+                // Add VM groupings.
+                var groups = [];
+                for (var i = 0; i < switchIndices.length-1; i++) {
+                    groups.push(rows.slice(switchIndices[i], switchIndices[i+1]));
+                }
+                // Add last VM event grouping.
+                if (switchIndices[switchIndices.length-1] != rows.length-1) {
+                    groups.push(rows.slice(switchIndices[switchIndices.length-1], rows.length));
+                }
+                else {
+                    groups.push(rows[rows.length-1]);
+                }
+
+                var totalUsage = {
+                    basic: 0,
+                    large: 0,
+                    ultra: 0
+                };
+                // Calculate usages for each VM.
+                for (var i = 0; i < groups.length; i++) {
+                    var usages = UsageCalc.calculateUsages(groups[i]);
+                    totalUsage.basic += usages.basicUsage;
+                    totalUsage.large += usages.largeUsage;
+                    totalUsage.ultra += usages.ultraUsage;
+                }
+                // Calculate total charges by multiplying by specified rate.
                 var charges = {
-                    basicCharges: Math.floor(usages.basicUsage*0.05 * 100) / 100,
-                    largeCharges: Math.floor(usages.largeUsage*0.10 * 100) / 100,
-                    ultraCharges: Math.floor(usages.ultraUsage*0.15 * 100) / 100
+                    basicCharges: Math.floor(totalUsage.basic*0.05 * 100) / 100,
+                    largeCharges: Math.floor(totalUsage.large*0.10 * 100) / 100,
+                    ultraCharges: Math.floor(totalUsage.ultra*0.15 * 100) / 100
                 }
                 return res.json(charges);
             } catch (e) {
@@ -101,7 +136,7 @@ vm
           });
     })
     .post("/start", (req, res) => {
-        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_STATE` = 'START' WHERE (`VM_ID` = '"+req.body.vm_id+"');", function (err, rows, fields) {
+        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_STATE` = 'START' WHERE (`VM_ID` = ?)", req.body.vm_id, function (err, rows, fields) {
             if (err) {
                 throw err;
                 return res.json({success: false});
@@ -112,7 +147,7 @@ vm
           });
     })
     .post("/stop", (req, res) => {
-        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_STATE` = 'STOP' WHERE (`VM_ID` = '"+req.body.vm_id+"');", function (err, rows, fields) {
+        connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_STATE` = 'STOP' WHERE (`VM_ID` = ?)", req.body.vm_id, function (err, rows, fields) {
             if (err) {
                 throw err;
                 return res.json({success: false});
