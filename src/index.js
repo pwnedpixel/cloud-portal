@@ -53,6 +53,9 @@ populateVMList = async() => {
     size_col.textContent = vm.VM_TYPE;
     // Add the Controls column
     var actions_col = document.createElement("td");
+    var actions_col_div = document.createElement("div");
+    actions_col_div.classList = "btn-group";
+    actions_col_div.role = "group";
     // Add the Monitoring column
     var monitor_col = document.createElement("td");
     monitor_col.id = "monitor_" + vm.VM_ID;
@@ -62,6 +65,7 @@ populateVMList = async() => {
     var start_button = document.createElement("BUTTON");
     start_button.innerText = "Start";
     start_button.id = vm.VM_ID;
+    start_button.classList = "btn btn-secondary"
     start_button.onclick = (event) => {startVM(event)};
     if (vm.VM_STATE == "START") {
       start_button.disabled = true;
@@ -70,6 +74,7 @@ populateVMList = async() => {
     var stop_button = document.createElement("button");
     stop_button.innerText = "Stop";
     stop_button.id = vm.VM_ID;
+    stop_button.classList = "btn btn-secondary"
     stop_button.onclick = (event) => {stopVM(event)};
     if (vm.VM_STATE == "STOP") {
       stop_button.disabled = true;
@@ -78,11 +83,13 @@ populateVMList = async() => {
     var delete_button = document.createElement("button");
     delete_button.innerText = "Delete";
     delete_button.id = vm.VM_ID;
+    delete_button.classList = "btn btn-secondary"
     delete_button.onclick = (event) => {deleteVM(event)};
     // Upgrade button
     var upgrade_button = document.createElement("button");
     upgrade_button.innerText = "Upgrade";
     upgrade_button.id = vm.VM_ID;
+    upgrade_button.classList = "btn btn-secondary"
     upgrade_button.onclick = (event) => {upgradeVM(event)};
     if (vm.VM_TYPE == "ULTRA" || vm.VM_STATE == "STOP") {
       upgrade_button.disabled = true;
@@ -91,6 +98,7 @@ populateVMList = async() => {
     var downgrade_button = document.createElement("button");
     downgrade_button.innerText = "Downgrade";
     downgrade_button.id = vm.VM_ID;
+    downgrade_button.classList = "btn btn-secondary"
     downgrade_button.onclick = (event) => {downgradeVM(event)};
     if (vm.VM_TYPE == "BASIC" || vm.VM_STATE == "STOP") {
       downgrade_button.disabled = true;
@@ -99,15 +107,16 @@ populateVMList = async() => {
     var usage_button = document.createElement("button");
     usage_button.innerText = "Usage (minutes)";
     usage_button.id = vm.VM_ID;
+    usage_button.classList = "btn btn-primary"
     usage_button.onclick = (event) => {vmUsage(event)};
 
-    actions_col.appendChild(start_button);
-    actions_col.appendChild(stop_button);
-    actions_col.appendChild(delete_button);
-    actions_col.appendChild(upgrade_button);
-    actions_col.appendChild(downgrade_button);
-    actions_col.appendChild(usage_button);
-
+    actions_col_div.appendChild(start_button);
+    actions_col_div.appendChild(stop_button);
+    actions_col_div.appendChild(delete_button);
+    actions_col_div.appendChild(upgrade_button);
+    actions_col_div.appendChild(downgrade_button);
+    actions_col_div.appendChild(usage_button);
+    actions_col.appendChild(actions_col_div);
 
     tr.appendChild(id_col);
     tr.appendChild(size_col);
