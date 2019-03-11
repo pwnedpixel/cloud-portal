@@ -1,44 +1,61 @@
 <header>
 	<script src="index.js"></script>
 	<link rel="stylesheet" href="styles.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </header>
 <body>
-	<div id="login-frame">
-		username: <input id="username" placeholder="username" type="text">
-		password: <input id="password" placeholder="password" type="password">
-		<button onclick="login()">Submit</button>
+	<div class = "container-fluid" id = "container">
+		<div class = "col d-flex justify-content-center align-items-center">
+			<div id="login-frame" class = "jumbotron">
+				<div class = "row justify-content-center">
+					<h3 class="display-4">Cache Me Outside Portal Login</h3>
+				</div>
+				<div class = "row justify-text-center">
+					<label for ="username">Username: </label>
+					<input id="username" class = "form-control" placeholder="username" type="text">
+					<label for ="password">Password: </label>
+					<input id="password" class = "form-control" placeholder="password" type="password">
+					<br/><br/>
+					<button class = "btn btn-primary" onclick="login()">Submit</button>
+				</div>
+			</div>
+		</div>
+		<div id="vim" style="display:none">
+					<h1>WELCOME TO THE MANAGEMENT CONSOLE</h1>
+					<h3>Create a new VM</h3>
+					<button onclick="createVM('BASIC')">Create Basic</button>
+					<button	onclick="createVM('LARGE')">Create Large</button>
+					<button onclick="createVM('ULTRA')">Create Ultra Large</button>
+					<h3>VM Management</h3>
+					<table id="vms">
+						<tr id="header-row">
+							<th>ID</th>
+							<th>Type</th>
+							<th>Controls</th>
+							<th>Monitoring</th>
+						</tr>
+					</table>
+					<br/>
+					<h3>Date Range</h3>
+					<input type="date" id="start-date"></input>
+					<input type="time" id="start-time" value="16:32:55"></input>
+					<br>
+					<input type="date" id="end-date"></input>
+					<input type="time" id="end-time" value="16:32:55"></input>
+					<h3>Get total usage cost</h3>
+					<button onclick="calculateCosts()">Calculate costs</button>
+					<br/><br/>
+					<table id = "charges">
+						<tr id = "header-charges">
+							<th>Basic</th>
+							<th>Large</th>
+							<th>Ultra Large</th>
+						</tr>
+					</table>
+				</div>
 	</div>
-	<div id="vim" style="display:none">
-		<h1>WELCOME TO THE MANAGEMENT CONSOLE</h1>
-		<h3>Create a new VM</h3>
-		<button onclick="createVM('BASIC')">Create Basic</button>
-		<button	onclick="createVM('LARGE')">Create Large</button>
-		<button onclick="createVM('ULTRA')">Create Ultra Large</button>
-		<h3>VM Management</h3>
-		<table id="vms">
-			<tr id="header-row">
-				<th>ID</th>
-				<th>Type</th>
-				<th>Controls</th>
-				<th>Monitoring</th>
-			</tr>
-		</table>
-		<br/>
-		<h3>Date Range</h3>
-		<input type="date" id="start-date"></input>
-		<input type="time" id="start-time" value="16:32:55"></input>
-		<br>
-		<input type="date" id="end-date"></input>
-		<input type="time" id="end-time" value="16:32:55"></input>
-		<h3>Get total usage cost</h3>
-		<button onclick="calculateCosts()">Calculate costs</button>
-		<br/><br/>
-		<table id = "charges">
-			<tr id = "header-charges">
-				<th>Basic</th>
-				<th>Large</th>
-				<th>Ultra Large</th>
-			</tr>
-		</table>
-	</div>
+	
 </body
