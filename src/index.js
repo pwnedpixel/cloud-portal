@@ -226,7 +226,12 @@ downgradeVM = async(event) => {
 
 vmUsage = async(event) => {
   vm = vmList.find(element => element.VM_ID == event.target.id);
-  body = { cc_id:cc_id, vm_id:vm.VM_ID };
+  body = { 
+    cc_id:cc_id, 
+    vm_id:vm.VM_ID,
+    start: document.getElementById("start-date").value + " " + document.getElementById("start-time").value, 
+    end: document.getElementById("end-date").value + " " + document.getElementById("end-time").value
+  };
   const response = await fetch("/vm/usage", {
     method: 'POST',
     body: JSON.stringify(body),

@@ -8,7 +8,7 @@ class UsageCalculator {
         if (rows.length < 1) return { basicUsage: basicUsage, largeUsage: largeUsage, ultraUsage: ultraUsage };
         var prevEventType = rows[0].EVENT_TYPE;
         var vmType = rows[0].VM_TYPE;
-        var prevTime = new Date(start);
+        var prevTime = new Date(start).getTime();
         // Iterate through all events.
         for (var i = 0; i < rows.length; i++) {
             var currTime = new Date(rows[i].EVENT_TIME).getTime();
@@ -49,7 +49,7 @@ class UsageCalculator {
         }
         if (!(prevEventType == "STOP" || prevEventType == "DELETE" || prevEventType == "CREATE")) {
             // Calculate delta to time now!
-            var now = Date(end);
+            var now = new Date(end).getTime();
             // This is disgusting, but we're returning the saved timestamps as local (not UTC)
             // so it adds five hours when it tries to convert the time to UTC.
             // So I'm just converting it to the real thing by subtracting five hours. *vomit*
