@@ -20,7 +20,8 @@ var connection = mysql.createConnection({
     host     : process.env.DB_HOST,
     user     : process.env.DB_USER,
     password : process.env.DB_PASS,
-    database : process.env.DB
+    database : process.env.DB,
+    timezone : 'Z',
   });
 
 connection.connect()
@@ -28,7 +29,7 @@ connection.connect()
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var port = process.env.PORT || 3003;
+var port = process.env.PORT || 3010;
 var user = express.Router();
 var vm = express.Router();
 var router = express.Router();
@@ -56,7 +57,8 @@ user
           })
     })
     .post("/charges", (req, res) => {
-        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE, VM_ID FROM cloudass2.EVENTS WHERE CC_ID = ? ORDER BY VM_ID,EVENT_TIME", req.body.cc_id, (err, rows, fields) => {
+        var insertParams = [req.body.cc_id, req.body.start, req.body.end];
+        connection.query("SELECT EVENT_TYPE, EVENT_TIME, VM_TYPE, VM_ID FROM cloudass2.EVENTS WHERE CC_ID = ? AND EVENT_TIME > ? AND EVENT_TIME < ? ORDER BY VM_ID,EVENT_TIME", insertParams, (err, rows, fields) => {
             if (err) throw err;
             try {
                 // VMs are returned in order of VM_ID
@@ -89,7 +91,7 @@ user
                 };
                 // Calculate usages for each VM.
                 for (var i = 0; i < groups.length; i++) {
-                    var usages = UsageCalc.calculateUsages(groups[i]);
+                    var usages = UsageCalc.calculateUsages(groups[i],req.body.start,req.body.end);
                     totalUsage.basic += usages.basicUsage;
                     totalUsage.large += usages.largeUsage;
                     totalUsage.ultra += usages.ultraUsage;
@@ -100,6 +102,7 @@ user
                     largeCharges: Math.floor(totalUsage.large*0.10 * 100) / 100,
                     ultraCharges: Math.floor(totalUsage.ultra*0.15 * 100) / 100
                 }
+                console.log(charges);
                 return res.json(charges);
             } catch (e) {
                 console.log(e);
@@ -174,7 +177,7 @@ vm
         connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_TYPE` = ? WHERE (`VM_ID` = ?)", insertParams, function (err, rows, fields) {
             if (err) throw err;
             else {
-                CUH.logEvent(req.body.cc_id, req.body.vm_id, "SCALE", req.body.vm_type);
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "UPGRADE", req.body.vm_type);
                 return res.json({success: true});
             }
         });
@@ -184,17 +187,18 @@ vm
         connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_TYPE` = ? WHERE (`VM_ID` = ?)", insertParams, function (err, rows, fields) {
             if (err) throw err;
             else {
-                CUH.logEvent(req.body.cc_id, req.body.vm_id, "SCALE", req.body.vm_type);
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "DOWNGRADE", req.body.vm_type);
                 return res.json({success: true});
             }
         });
     })
     .post("/usage", (req, res) => {
-        var insertParams = [req.body.cc_id, req.body.vm_id];
-        connection.query("SELECT EVENT_TIME, EVENT_TYPE, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ? AND VM_ID = ?", insertParams, (err, rows, fields) => {
+        var insertParams = [req.body.cc_id, req.body.vm_id, req.body.start, req.body.end];
+        console.log(insertParams);
+        connection.query("SELECT EVENT_TIME, EVENT_TYPE, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ? AND VM_ID = ? AND EVENT_TIME > ? AND EVENT_TIME < ?", insertParams, (err, rows, fields) => {
             if (err) throw err;
             try {
-                var usages = UsageCalc.calculateUsages(rows);
+                var usages = UsageCalc.calculateUsages(rows,req.body.start,req.body.end);
                 return res.json(usages);
             } catch (e) {
                 console.log(e);
