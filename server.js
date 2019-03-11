@@ -20,7 +20,8 @@ var connection = mysql.createConnection({
     host     : process.env.DB_HOST,
     user     : process.env.DB_USER,
     password : process.env.DB_PASS,
-    database : process.env.DB
+    database : process.env.DB,
+    timezone : 'Z',
   });
 
 connection.connect()
@@ -176,7 +177,7 @@ vm
         connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_TYPE` = ? WHERE (`VM_ID` = ?)", insertParams, function (err, rows, fields) {
             if (err) throw err;
             else {
-                CUH.logEvent(req.body.cc_id, req.body.vm_id, "SCALE", req.body.vm_type);
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "UPGRADE", req.body.vm_type);
                 return res.json({success: true});
             }
         });
@@ -186,13 +187,14 @@ vm
         connection.query("UPDATE `cloudass2`.`VIRTUAL_MACHINES` SET `VM_TYPE` = ? WHERE (`VM_ID` = ?)", insertParams, function (err, rows, fields) {
             if (err) throw err;
             else {
-                CUH.logEvent(req.body.cc_id, req.body.vm_id, "SCALE", req.body.vm_type);
+                CUH.logEvent(req.body.cc_id, req.body.vm_id, "DOWNGRADE", req.body.vm_type);
                 return res.json({success: true});
             }
         });
     })
     .post("/usage", (req, res) => {
         var insertParams = [req.body.cc_id, req.body.vm_id, req.body.start, req.body.end];
+        console.log(insertParams);
         connection.query("SELECT EVENT_TIME, EVENT_TYPE, VM_TYPE FROM cloudass2.EVENTS WHERE CC_ID = ? AND VM_ID = ? AND EVENT_TIME > ? AND EVENT_TIME < ?", insertParams, (err, rows, fields) => {
             if (err) throw err;
             try {
