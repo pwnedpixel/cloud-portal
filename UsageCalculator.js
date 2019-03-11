@@ -1,16 +1,16 @@
 class UsageCalculator {
 
     // Calculate VM usage time in minutes for each config type.
-    calculateUsages(rows) {
+    calculateUsages(rows,start,end) {
         var basicUsage = 0;
         var largeUsage = 0;
         var ultraUsage = 0;
         if (rows.length < 1) return { basicUsage: basicUsage, largeUsage: largeUsage, ultraUsage: ultraUsage };
         var prevEventType = rows[0].EVENT_TYPE;
         var vmType = rows[0].VM_TYPE;
-        var prevTime = new Date(rows[0].EVENT_TIME).getTime();
+        var prevTime = new Date(start);
         // Iterate through all events.
-        for (var i = 1; i < rows.length; i++) {
+        for (var i = 0; i < rows.length; i++) {
             var currTime = new Date(rows[i].EVENT_TIME).getTime();
             var currType = rows[i].EVENT_TYPE;
 
@@ -49,7 +49,7 @@ class UsageCalculator {
         }
         if (!(prevEventType == "STOP" || prevEventType == "DELETE" || prevEventType == "CREATE")) {
             // Calculate delta to time now!
-            var now = Date.now();
+            var now = Date(end);
             // This is disgusting, but we're returning the saved timestamps as local (not UTC)
             // so it adds five hours when it tries to convert the time to UTC.
             // So I'm just converting it to the real thing by subtracting five hours. *vomit*

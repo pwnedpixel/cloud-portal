@@ -1,12 +1,9 @@
-VIM_IP = "https://cloud-ass-2-vim.herokuapp.com"
-// VIM_IP = "http://localhost:3003"
-
 login = async() => {
 	username = document.getElementById("username").value;
 	password = document.getElementById("password").value;
 	body = {user:username,password:password}
 
-	const response = await fetch(VIM_IP+"/user/login", {
+	const response = await fetch("/user/login", {
 	method: 'POST',
     body: JSON.stringify(body),
     headers:{
@@ -26,7 +23,7 @@ login = async() => {
 
 createVM = async(type) => {
 	body = {vm_type:type, cc_id:cc_id};
-	const response = await fetch(VIM_IP+"/vm/create", {
+	const response = await fetch("/vm/create", {
 	method: 'POST',
     body: JSON.stringify(body),
     headers:{
@@ -42,7 +39,7 @@ populateVMList = async() => {
   var headers = document.getElementById("header-row");
   vmTable.innerHTML="";
   vmTable.appendChild(headers);
-  const response = await fetch(VIM_IP+"/vm/"+cc_id);
+  const response = await fetch("/vm/"+cc_id);
   vmList = await response.json();
   vmList = JSON.parse(vmList)
 
@@ -124,7 +121,7 @@ startVM = async(event) => {
   console.log("start: "+event.target.id);
   vm = vmList.find(element => element.VM_ID == event.target.id);
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
-  const response = await fetch(VIM_IP+"/vm/start", {
+  const response = await fetch("/vm/start", {
     method: 'POST',
       body: JSON.stringify(body),
       headers:{
@@ -141,7 +138,7 @@ stopVM = async(event) => {
   console.log("stop: "+event.target.id);
   vm = vmList.find(element => element.VM_ID == event.target.id);
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
-  const response = await fetch(VIM_IP+"/vm/stop", {
+  const response = await fetch("/vm/stop", {
     method: 'POST',
       body: JSON.stringify(body),
       headers:{
@@ -158,7 +155,7 @@ deleteVM = async(event) => {
   console.log("delete: "+event.target.id);
   vm = vmList.find(element => element.VM_ID == event.target.id);
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
-  const response = await fetch(VIM_IP+"/vm/delete", {
+  const response = await fetch("/vm/delete", {
     method: 'POST',
       body: JSON.stringify(body),
       headers:{
@@ -185,7 +182,7 @@ upgradeVM = async(event) => {
       return;
   }
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
-  const response = await fetch(VIM_IP+"/vm/upgrade", {
+  const response = await fetch("/vm/upgrade", {
     method: 'POST',
       body: JSON.stringify(body),
       headers:{
@@ -214,7 +211,7 @@ downgradeVM = async(event) => {
   }
 
   body = {cc_id:vm.CC_ID, vm_id: vm.VM_ID, vm_type:vm.VM_TYPE}
-  const response = await fetch(VIM_IP+"/vm/downgrade", {
+  const response = await fetch("/vm/downgrade", {
     method: 'POST',
       body: JSON.stringify(body),
       headers:{
@@ -230,7 +227,7 @@ downgradeVM = async(event) => {
 vmUsage = async(event) => {
   vm = vmList.find(element => element.VM_ID == event.target.id);
   body = { cc_id:cc_id, vm_id:vm.VM_ID };
-  const response = await fetch(VIM_IP+"/vm/usage", {
+  const response = await fetch("/vm/usage", {
     method: 'POST',
     body: JSON.stringify(body),
     headers:{
@@ -259,8 +256,12 @@ displayUsages = async(usageResponse, id) => {
 }
 
 calculateCosts = async() => {
-  body = { cc_id:cc_id };
-  const response = await fetch(VIM_IP+"/user/charges", {
+  body = { 
+    cc_id: cc_id, 
+    start: document.getElementById("start-date").value + " " + document.getElementById("start-time").value, 
+    end: document.getElementById("end-date").value + " " + document.getElementById("end-time").value
+  };
+  const response = await fetch("/user/charges", {
     method: 'POST',
       body: JSON.stringify(body),
       headers:{
