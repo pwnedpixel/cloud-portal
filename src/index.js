@@ -315,5 +315,7 @@ displayTotalCost = async(costResponse) => {
   chargesTable.appendChild(tr);
 }
 
+emailLog = async() => await fetch("/user/emailLog");
+
 var cc_id = ""
 var vmList = []

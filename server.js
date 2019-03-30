@@ -109,6 +109,15 @@ user
                 return res.json({error: e});
             }
         });
+    })
+    .get("/emailLog", (req, res) => {
+        try {
+            CUH.emailLog();
+            return res.json();
+        } catch (e) {
+            console.log(e);
+            return res.json({error: e});
+        }
     });
 
 vm
